@@ -132,3 +132,58 @@ python src/uploader.py --row 2        # really uploads just row 2 (use a test cl
 - **Everything else** (thumbnail 50, playlist 50, **each caption file 400**) shares 10,000 units per day. In practice that's ~20 videos with 2 caption files each per day. If quota runs out after a video is up, the video is **not** re-uploaded. The missing step is noted in *Notes* so you can add it in Studio.
 - **Made for kids** videos get comments and some features turned off by YouTube. That's expected for Kidz Curious Labs and Mirrorkin Press.
 - **Uploading stuck:** if a row stays "Uploading" (a crashed run), check YouTube Studio before setting it back to Ready, so you don't upload it twice.
+
+---
+
+# Web app (in progress — Phase 1: sign-in)
+
+A private web app is being built on top of the script above (see `docs/SPEC.md` and `docs/BUILD_PLAN.md`).
+The script keeps working as before while that happens.
+
+## Try it on your laptop (Windows PowerShell)
+
+**1. One-time: Google sign-in client.** In Google Cloud Console → *APIs & Services* → *Credentials* →
+*Create credentials* → *OAuth client ID* → type **Web application**. Under *Authorised redirect URIs* add
+`http://localhost:8000/auth/callback`. Copy the Client ID and Client secret.
+
+**2. One-time: install.** Open PowerShell in the project folder:
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+Copy-Item .env.example .env
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
+
+Open `.env` in Notepad (`notepad .env`) and fill in:
+- `SESSION_SECRET` = the long random line the last command printed
+- `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` = from step 1
+- `ALLOWED_EMAILS` = the Google account(s) allowed in
+
+Phase 1 doesn't store anything in the database yet, so you can skip the Firestore emulator for now.
+
+**3. Run it:**
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload
+```
+
+Open http://localhost:8000. Sign in with your allowed account to reach the dashboard; any other Google
+account gets "Access denied". Stop the server with `Ctrl+C`.
+
+**Run the checks** (they also run automatically on GitHub for every push):
+
+```powershell
+pytest -q
+ruff check .
+```
+
+## Daily database keep-alive
+
+`.github/workflows/db-ping.yml` calls the deployed app's `/healthz/db` once a day (08:47 IST). The app then
+writes and reads one tiny Firestore document (`system/heartbeat`). The workflow skips quietly until the
+app is deployed (Phase 7) and you add two repository secrets: `APP_URL` (the Cloud Run URL) and
+`PING_TOKEN` (the same value as the app's `PING_TOKEN` setting). Note: GitHub pauses scheduled workflows
+in a repo with no activity for 60 days; re-enable it from the *Actions* tab if that happens.
