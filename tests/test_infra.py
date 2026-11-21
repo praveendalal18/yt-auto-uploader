@@ -60,10 +60,11 @@ def test_db_ping_disabled_when_no_token_configured(monkeypatch):
     from fastapi.testclient import TestClient
 
     from app.main import create_app
+    from app.services.repo import MemoryRepo
     from tests.conftest import make_settings
 
     monkeypatch.setattr(firestore, "ping", lambda: None)
-    c = TestClient(create_app(make_settings(ping_token="")))
+    c = TestClient(create_app(make_settings(ping_token=""), repo=MemoryRepo()))
     assert c.get("/healthz/db", headers={"x-ping-token": ""}).status_code == 404
 
 
@@ -107,3 +108,23 @@ def test_ping_writes_and_reads_heartbeat(monkeypatch):
     monkeypatch.setattr(firestore, "get_db", lambda: DB())
     firestore.ping()
     assert ref.ops == [("set", True), ("get",)]
+
+
+def test_unexpected_error_shows_friendly_page(google):
+    from fastapi.testclient import TestClient
+
+    from app.main import create_app
+    from tests.conftest import OWNER, make_settings, sign_in
+
+    class BrokenRepo:
+        def __getattr__(self, name):
+            def fail(*a, **k):
+                raise RuntimeError("database down")
+            return fail
+
+    c = TestClient(create_app(make_settings(), repo=BrokenRepo()), raise_server_exceptions=False)
+    sign_in(c, google, OWNER)
+    r = c.get("/channels", headers={"accept": "text/html"})
+    assert r.status_code == 500 and "database is reachable" in r.text
+    assert "database down" not in r.text  # no internals leaked
+    assert "Can't reach the database" in c.get("/", headers={"accept": "text/html"}).text

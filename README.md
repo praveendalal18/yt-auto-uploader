@@ -135,7 +135,7 @@ python src/uploader.py --row 2        # really uploads just row 2 (use a test cl
 
 ---
 
-# Web app (in progress — Phase 1: sign-in)
+# Web app (in progress — Phases 1–2: sign-in + channels)
 
 A private web app is being built on top of the script above (see `docs/SPEC.md` and `docs/BUILD_PLAN.md`).
 The script keeps working as before while that happens.
@@ -161,7 +161,16 @@ Open `.env` in Notepad (`notepad .env`) and fill in:
 - `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` = from step 1
 - `ALLOWED_EMAILS` = the Google account(s) allowed in
 
-Phase 1 doesn't store anything in the database yet, so you can skip the Firestore emulator for now.
+- `FERNET_KEY` = the output of
+  `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
+  (this key encrypts your channel logins; store a copy somewhere safe)
+
+The app keeps its data in Firestore. Let your laptop use it (one-time, opens a browser):
+
+```powershell
+gcloud auth application-default login
+gcloud auth application-default set-quota-project yt-auto-uploader
+```
 
 **3. Run it:**
 
@@ -172,6 +181,12 @@ uvicorn app.main:app --reload
 
 Open http://localhost:8000. Sign in with your allowed account to reach the dashboard; any other Google
 account gets "Access denied". Stop the server with `Ctrl+C`.
+
+**Connect your channels:** go to *Channels* → **Connect** → choose pravendalal@gmail.com → pick the
+channel (e.g. Ink & Motion) on Google's screen → allow. Repeat for each channel, then **Connect account**
+once for Sheets + Gmail. The logins saved by the old script (`tokens/tokens.json`) belong to a different
+OAuth client, so they can't be reused here; connecting again takes a minute per channel.
+If a connection ever shows **Expired**, click **Reconnect**. *Check connections now* re-tests them all.
 
 **Run the checks** (they also run automatically on GitHub for every push):
 

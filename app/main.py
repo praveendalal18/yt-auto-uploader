@@ -7,8 +7,11 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import Settings
-from app.routers import auth, pages
+from app.routers import auth, channels, pages
 from app.security import LoginRequired, csrf_protect
+from app.services.firestore import get_db
+from app.services.repo import FirestoreRepo
+from app.services.seed import load_expected
 from app.templating import render
 
 
@@ -28,11 +31,13 @@ def _setup_logging() -> None:
     root.setLevel(logging.INFO)
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(settings: Settings | None = None, repo=None) -> FastAPI:
     settings = settings or Settings.from_env()
     app = FastAPI(title="YouTube Studio Scheduler", docs_url=None, redoc_url=None, openapi_url=None,
                   dependencies=[Depends(csrf_protect)])
     app.state.settings = settings
+    app.state.repo = repo or FirestoreRepo(get_db)
+    app.state.expected = load_expected()
     app.add_middleware(
         SessionMiddleware,
         secret_key=settings.session_secret,
@@ -64,8 +69,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                           status_code=exc.status_code)
         return JSONResponse({"detail": exc.detail}, status_code=exc.status_code, headers=exc.headers)
 
+    @app.exception_handler(Exception)
+    async def unexpected(request: Request, exc: Exception):
+        logging.getLogger("app").exception("unhandled error on %s", request.url.path)
+        message = ("Something went wrong. If you're running locally, check that the database is reachable "
+                   "(gcloud auth application-default login) and try again.")
+        if "text/html" in request.headers.get("accept", ""):
+            return render(request, "error.html", {"status": 500, "message": message}, status_code=500)
+        return JSONResponse({"detail": message}, status_code=500)
+
     app.include_router(auth.router)
     app.include_router(pages.router)
+    app.include_router(channels.router)
     return app
 
 

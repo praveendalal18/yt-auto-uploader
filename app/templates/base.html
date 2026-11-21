@@ -24,6 +24,7 @@
       <nav id="main-nav" class="absolute sm:static top-14 right-4 bg-white sm:bg-transparent shadow sm:shadow-none rounded p-3 sm:p-0 sm:flex items-center gap-4 text-sm"
            :class="open ? 'block' : 'hidden sm:flex'">
         <a href="/" class="block py-1 hover:underline">Dashboard</a>
+        <a href="/channels" class="block py-1 hover:underline">Channels</a>
         <span class="block py-1 text-slate-500">{{ user.email }}</span>
         <form method="post" action="/auth/logout">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -34,6 +35,10 @@
     </div>
   </header>
   <main class="max-w-6xl mx-auto px-4 py-6">
+    {% for kind, message in flashes %}
+    <div class="mb-3 rounded-lg px-4 py-2 text-sm {{ {'ok': 'bg-green-100 text-green-900', 'warn': 'bg-amber-100 text-amber-900'}.get(kind, 'bg-red-100 text-red-900') }}"
+         role="{{ 'status' if kind == 'ok' else 'alert' }}">{{ {'ok': '✓', 'warn': '⚠', 'error': '✕'}.get(kind, '') }} {{ message }}</div>
+    {% endfor %}
     {% block content %}{% endblock %}
   </main>
   <footer class="max-w-6xl mx-auto px-4 py-6 text-xs text-slate-500 flex gap-4">

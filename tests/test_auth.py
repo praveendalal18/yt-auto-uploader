@@ -65,9 +65,10 @@ def test_empty_allowlist_lets_nobody_in(google):
     from fastapi.testclient import TestClient
 
     from app.main import create_app
+    from app.services.repo import MemoryRepo
     from tests.conftest import make_settings
 
-    c = TestClient(create_app(make_settings(allowed_emails=frozenset())))
+    c = TestClient(create_app(make_settings(allowed_emails=frozenset()), repo=MemoryRepo()))
     assert sign_in(c, google, OWNER).status_code == 403
 
 
@@ -135,9 +136,10 @@ def test_login_page_explains_missing_oauth_setup(google):
     from fastapi.testclient import TestClient
 
     from app.main import create_app
+    from app.services.repo import MemoryRepo
     from tests.conftest import make_settings
 
-    c = TestClient(create_app(make_settings(oauth_client_id="")))
+    c = TestClient(create_app(make_settings(oauth_client_id=""), repo=MemoryRepo()))
     assert "OAUTH_CLIENT_ID" in c.get("/login").text
     assert c.get("/auth/login", follow_redirects=False).status_code == 503
 

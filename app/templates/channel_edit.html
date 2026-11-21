@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ ch.title }} settings · Studio Scheduler{% endblock %}
+{% block content %}
+<a href="/channels" class="text-sm underline">← Channels</a>
+<h1 class="text-2xl font-semibold mt-2 mb-1">{{ ch.title }}</h1>
+<p class="text-sm text-slate-500 mb-4">{{ ch.handle }} · {% include "_status.html" %}</p>
+
+{% if errors %}
+<div class="mb-4 rounded-lg bg-red-100 text-red-900 px-4 py-3 text-sm" role="alert">
+  <p class="font-medium">Please fix these and save again:</p>
+  <ul class="list-disc pl-5">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<form method="post" action="/channels/{{ ch.id }}" class="space-y-6" x-data="{ kids: {{ 'true' if ch.defaults.made_for_kids else 'false' }} }">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+  <fieldset class="bg-white rounded-xl shadow p-4 grid gap-4 sm:grid-cols-2">
+    <legend class="font-medium px-1">Upload defaults</legend>
+    <label class="flex items-center gap-2"><input type="checkbox" name="made_for_kids" x-model="kids" {{ 'checked' if ch.defaults.made_for_kids }}> Made for kids</label>
+    <label class="flex items-center gap-2"><input type="checkbox" name="ai_content" {{ 'checked' if ch.defaults.ai_content }}> Contains AI / altered content</label>
+    <label class="flex items-center gap-2"><input type="checkbox" name="notify_subscribers" {{ 'checked' if ch.defaults.notify_subscribers }}> Notify subscribers</label>
+    <label class="flex flex-col gap-1 text-sm">Category
+      <select name="category_id" class="rounded border border-slate-300 px-2 py-1.5">
+        {% for id, name in categories.items() %}<option value="{{ id }}" {{ 'selected' if id == ch.defaults.category_id }}>{{ name }}</option>{% endfor %}
+      </select></label>
+    <label class="flex flex-col gap-1 text-sm">Video language (code)
+      <input name="language" value="{{ ch.defaults.language }}" class="rounded border border-slate-300 px-2 py-1.5" placeholder="en"></label>
+    <label class="flex flex-col gap-1 text-sm">Default playlist (optional)
+      <input name="default_playlist" value="{{ ch.defaults.default_playlist }}" maxlength="150" class="rounded border border-slate-300 px-2 py-1.5"></label>
+    <label class="flex flex-col gap-1 text-sm">Calendar colour
+      <input type="color" name="colour" value="{{ ch.colour }}" class="h-9 w-20 rounded border border-slate-300"></label>
+  </fieldset>
+
+  <fieldset class="bg-white rounded-xl shadow p-4 space-y-4">
+    <legend class="font-medium px-1">Posting slots (India time)</legend>
+    {% for type, field in [('Short', 'short'), ('Long', 'long')] %}
+    {% set rule = rules.get(type) %}
+    <div>
+      <p class="text-sm font-medium mb-1">{{ type }} videos</p>
+      <div class="flex flex-wrap items-center gap-3 text-sm">
+        {% for d in weekdays %}
+        <label class="flex items-center gap-1"><input type="checkbox" name="{{ field }}_days" value="{{ loop.index0 }}" {{ 'checked' if rule and loop.index0 in rule.weekdays }}> {{ d }}</label>
+        {% endfor %}
+        <label class="flex items-center gap-1">at <input type="time" name="{{ field }}_time" value="{{ rule.time if rule else '19:00' }}" class="rounded border border-slate-300 px-2 py-1" aria-label="{{ type }} time"></label>
+      </div>
+    </div>
+    {% endfor %}
+  </fieldset>
+
+  <fieldset class="bg-white rounded-xl shadow p-4 grid gap-4 sm:grid-cols-2">
+    <legend class="font-medium px-1">AI writing profile (used in Phase 6)</legend>
+    <label class="flex flex-col gap-1 text-sm sm:col-span-2">Audience
+      <input name="ai_audience" value="{{ ch.ai_profile.audience }}" maxlength="500" class="rounded border border-slate-300 px-2 py-1.5" placeholder="e.g. curious kids aged 5–9 and their parents"></label>
+    <label class="flex flex-col gap-1 text-sm">Tone
+      <input name="ai_tone" value="{{ ch.ai_profile.tone }}" maxlength="300" class="rounded border border-slate-300 px-2 py-1.5" placeholder="e.g. warm, playful, simple words"></label>
+    <label class="flex flex-col gap-1 text-sm">Writing language (code)
+      <input name="ai_language" value="{{ ch.ai_profile.language }}" class="rounded border border-slate-300 px-2 py-1.5" placeholder="en"></label>
+    <label class="flex flex-col gap-1 text-sm sm:col-span-2">Title style
+      <input name="ai_title_style" value="{{ ch.ai_profile.title_style }}" maxlength="500" class="rounded border border-slate-300 px-2 py-1.5" placeholder="e.g. question + emoji, under 60 characters"></label>
+    <label class="flex flex-col gap-1 text-sm">Hashtags (space or comma separated)
+      <input name="ai_hashtags" value="{{ ch.ai_profile.hashtags | join(' ') }}" class="rounded border border-slate-300 px-2 py-1.5" placeholder="#science #kids"></label>
+    <label class="flex flex-col gap-1 text-sm">Words to avoid (comma separated)
+      <input name="ai_banned_words" value="{{ ch.ai_profile.banned_words | join(', ') }}" class="rounded border border-slate-300 px-2 py-1.5"></label>
+    <label class="flex items-center gap-2 sm:col-span-2"><input type="checkbox" name="ai_kids_safe" {{ 'checked' if ch.ai_profile.kids_safe }} :disabled="kids" x-bind:checked="kids || {{ 'true' if ch.ai_profile.kids_safe else 'false' }}"> Kids-safe writing rules (always on for made-for-kids channels)</label>
+  </fieldset>
+
+  <button class="rounded-lg bg-slate-900 text-white px-4 py-2 font-medium hover:bg-slate-700">Save</button>
+</form>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Channels · Studio Scheduler{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+  <h1 class="text-2xl font-semibold">Channels</h1>
+  <form method="post" action="/channels/check">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-100">Check connections now</button>
+  </form>
+</div>
+<p class="text-sm text-slate-600 mb-4">
+  Click <strong>Connect</strong>, choose your Google account, then pick the <strong>channel</strong> on Google's screen.
+  Do this once per channel.
+</p>
+
+<div class="grid gap-4 sm:grid-cols-2">
+{% for row in rows %}
+  {% set ch = row.channel %}{% set exp = row.expected %}
+  <section class="bg-white rounded-xl shadow p-4 flex flex-col gap-3">
+    <div class="flex items-center gap-3">
+      {% if ch and ch.thumbnail_url %}
+      <img src="{{ ch.thumbnail_url }}" alt="" class="w-10 h-10 rounded-full" referrerpolicy="no-referrer">
+      {% else %}
+      <span class="w-10 h-10 rounded-full" style="background: {{ ch.colour if ch else exp.colour }}" aria-hidden="true"></span>
+      {% endif %}
+      <div class="min-w-0">
+        <h2 class="font-medium truncate">
+          <span class="inline-block w-2.5 h-2.5 rounded-full align-middle mr-1" style="background: {{ ch.colour if ch else exp.colour }}" aria-hidden="true"></span>
+          {{ ch.title if ch else exp.name }}
+        </h2>
+        <p class="text-sm text-slate-500">{{ ch.handle if ch else exp.handle }}</p>
+      </div>
+      <div class="ml-auto">{% include "_status.html" %}</div>
+    </div>
+    {% if ch %}
+    <dl class="text-xs text-slate-600 grid grid-cols-2 gap-x-3 gap-y-1">
+      <dt>Made for kids</dt><dd>{{ 'Yes' if ch.defaults.made_for_kids else 'No' }}</dd>
+      <dt>AI / altered content</dt><dd>{{ 'Yes' if ch.defaults.ai_content else 'No' }}</dd>
+      <dt>Category</dt><dd>{{ categories.get(ch.defaults.category_id, ch.defaults.category_id) }}</dd>
+      {% for r in ch.slot_rules %}
+      <dt>{{ r.type }}s</dt><dd>{% if r.weekdays %}{{ r.weekdays | days }} at {{ r.time }}{% else %}none{% endif %}</dd>
+      {% endfor %}
+      {% if ch.token_checked_at %}<dt>Last checked</dt><dd>{{ ch.token_checked_at | ist }}</dd>{% endif %}
+    </dl>
+    {% if ch.token_error %}<p class="text-xs text-red-700">{{ ch.token_error }}</p>{% endif %}
+    {% endif %}
+    <div class="flex gap-2 mt-auto">
+      <a href="/auth/channel/start" class="rounded-lg px-3 py-1.5 text-sm font-medium {{ 'bg-slate-900 text-white hover:bg-slate-700' if not ch or not ch.healthy else 'border border-slate-300 hover:bg-slate-100' }}">
+        {{ 'Reconnect' if ch else 'Connect' }}</a>
+      {% if ch %}<a href="/channels/{{ ch.id }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100">Settings</a>{% endif %}
+    </div>
+  </section>
+{% endfor %}
+</div>
+
+<section class="bg-white rounded-xl shadow p-4 mt-6">
+  <div class="flex flex-wrap items-center gap-3">
+    <div>
+      <h2 class="font-medium">Google account for Sheets + email</h2>
+      <p class="text-sm text-slate-500">Used to mirror the schedule into your Google Sheet and email you summaries.</p>
+    </div>
+    <div class="ml-auto">
+      {% if account.account_status == 'ok' %}<span class="inline-block rounded-full bg-green-100 text-green-800 text-xs px-2 py-0.5">● Connected</span>
+      {% elif account.account_status == 'missing' %}<span class="inline-block rounded-full bg-slate-200 text-slate-700 text-xs px-2 py-0.5">Not connected</span>
+      {% else %}<span class="inline-block rounded-full bg-red-100 text-red-800 text-xs px-2 py-0.5">● Expired — reconnect</span>{% endif %}
+    </div>
+  </div>
+  {% if account.account_email %}<p class="text-sm mt-2">{{ account.account_email }}</p>{% endif %}
+  {% if account.account_error %}<p class="text-xs text-red-700 mt-1">{{ account.account_error }}</p>{% endif %}
+  <a href="/auth/account/start" class="inline-block mt-3 rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100">
+    {{ 'Reconnect' if account.account_token_enc else 'Connect' }} account</a>
+</section>
+{% endblock %}

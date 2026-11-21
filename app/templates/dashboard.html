@@ -3,9 +3,28 @@
 {% block content %}
 <h1 class="text-2xl font-semibold mb-1">Dashboard</h1>
 <p class="text-sm text-slate-600 mb-6">Signed in as {{ user.email }} · {{ now_ist }} IST</p>
+{% if db_error %}
+<div class="mb-4 rounded-lg bg-red-100 text-red-900 px-4 py-3 text-sm" role="alert">
+  Can't reach the database. Locally: run <code>gcloud auth application-default login</code> (real Firestore) or start the Firestore emulator — see the README.
+</div>
+{% endif %}
+{% set ok = channels | selectattr('healthy') | list %}
+{% set broken = channels | selectattr('connected') | rejectattr('healthy') | list %}
 <div class="grid gap-4 sm:grid-cols-3">
+  <section class="bg-white rounded-xl shadow p-4">
+    <h2 class="font-medium">Channels</h2>
+    <p class="text-3xl font-semibold mt-2">{{ ok | length }}<span class="text-base text-slate-500"> / {{ expected_count }} connected</span></p>
+    <a href="/channels" class="text-sm underline">Manage channels</a>
+  </section>
+  <section class="bg-white rounded-xl shadow p-4">
+    <h2 class="font-medium">Needs attention</h2>
+    {% if broken or (account and account.account_status == 'expired') %}
+    <ul class="text-sm text-red-800 mt-2 list-disc pl-5">
+      {% for ch in broken %}<li>{{ ch.title }}: reconnect</li>{% endfor %}
+      {% if account and account.account_status == 'expired' %}<li>Sheets + Gmail account: reconnect</li>{% endif %}
+    </ul>
+    {% else %}<p class="text-sm text-slate-500 mt-2">Nothing right now.</p>{% endif %}
+  </section>
   <section class="bg-white rounded-xl shadow p-4"><h2 class="font-medium">Next 7 days</h2><p class="text-sm text-slate-500 mt-2">Coming in Phase 3.</p></section>
-  <section class="bg-white rounded-xl shadow p-4"><h2 class="font-medium">Needs attention</h2><p class="text-sm text-slate-500 mt-2">Coming in Phase 4.</p></section>
-  <section class="bg-white rounded-xl shadow p-4"><h2 class="font-medium">Quota today</h2><p class="text-sm text-slate-500 mt-2">Coming in Phase 4.</p></section>
 </div>
 {% endblock %}

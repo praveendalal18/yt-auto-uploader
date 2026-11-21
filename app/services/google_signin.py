@@ -14,16 +14,20 @@ class SignInError(Exception):
     pass
 
 
-def build_auth_url(client_id: str, redirect_uri: str, state: str, nonce: str) -> str:
+def build_auth_url(client_id: str, redirect_uri: str, state: str, nonce: str,
+                   scopes: str = SCOPES, offline: bool = False) -> str:
+    """offline=True asks for a refresh token (used to connect channels / the Sheets+Gmail account)."""
     params = {
         "client_id": client_id,
         "redirect_uri": redirect_uri,
         "response_type": "code",
-        "scope": SCOPES,
+        "scope": scopes,
         "state": state,
         "nonce": nonce,
-        "prompt": "select_account",
+        "prompt": "select_account consent" if offline else "select_account",
     }
+    if offline:
+        params["access_type"] = "offline"
     return f"{AUTH_URL}?{urlencode(params)}"
 
 

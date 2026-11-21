@@ -28,6 +28,7 @@ class Settings:
     contact_email: str = ""
     timezone: str = "Asia/Kolkata"
     ping_token: str = ""
+    fernet_key: str = ""
 
     @property
     def redirect_uri(self) -> str:
@@ -62,4 +63,5 @@ class Settings:
             contact_email=os.environ.get("CONTACT_EMAIL", ""),
             timezone=os.environ.get("TZ", "Asia/Kolkata") or "Asia/Kolkata",
             ping_token=os.environ.get("PING_TOKEN", ""),
+            fernet_key=os.environ.get("FERNET_KEY", ""),
         )

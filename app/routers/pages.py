@@ -15,7 +15,15 @@ router = APIRouter()
 
 @router.get("/")
 def dashboard(request: Request, user: dict = Depends(require_user)):
-    return render(request, "dashboard.html", {"now_ist": fmt_ist(now_utc())})
+    ctx = {"now_ist": fmt_ist(now_utc()), "db_error": False, "channels": [], "account": None}
+    try:
+        ctx["channels"] = request.app.state.repo.list_channels()
+        ctx["account"] = request.app.state.repo.get_app_settings()
+    except Exception:
+        log.exception("dashboard: database not reachable")
+        ctx["db_error"] = True
+    ctx["expected_count"] = len(request.app.state.expected)
+    return render(request, "dashboard.html", ctx)
 
 
 @router.get("/privacy")

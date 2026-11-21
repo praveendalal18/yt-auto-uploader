@@ -13,3 +13,5 @@ python-multipart>=0.0.18
 python-dotenv>=1.0
 requests>=2.32
 google-cloud-firestore>=2.19
+pydantic>=2.9
+cryptography>=43
