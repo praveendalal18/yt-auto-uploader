@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Terms of Service · Studio Scheduler{% endblock %}
+{% block content %}
+<article class="max-w-3xl bg-white rounded-xl shadow p-6 space-y-4 text-sm leading-6">
+  <h1 class="text-2xl font-semibold">Terms of Service</h1>
+  <p>YouTube Studio Scheduler is a private tool for managing its owner's own YouTube channels. Access is limited to the owner's Google account; no other accounts are accepted.</p>
+  <p>Use of the app's YouTube features is subject to the <a class="underline" href="https://www.youtube.com/t/terms">YouTube Terms of Service</a> and the <a class="underline" href="https://policies.google.com/privacy">Google Privacy Policy</a>. See also our <a class="underline" href="/privacy">Privacy Policy</a>.</p>
+  <p>The app is provided as-is, without warranty. The owner is responsible for the content uploaded through it.</p>
+  {% if settings.public_contact %}<p>Contact: {{ settings.public_contact }}</p>{% endif %}
+</article>
+{% endblock %}

@@ -31,6 +31,7 @@ gcloud secrets add-iam-policy-binding "$SECRET" \
 # 2) Build + deploy the job
 gcloud run jobs deploy "$JOB" --source . --region "$REGION" \
   --memory 1Gi --cpu 1 --task-timeout 3600 --max-retries 0 \
+  --command python --args src/uploader.py \
   --set-env-vars "SHEET_ID=${SHEET_ID},DRIVE_FOLDER_ID=${DRIVE_FOLDER_ID},TOKENS_FILE=/secrets/tokens.json" \
   --set-secrets "/secrets/tokens.json=${SECRET}:latest"
 

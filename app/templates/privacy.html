@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Privacy Policy · Studio Scheduler{% endblock %}
+{% block content %}
+<article class="prose max-w-3xl bg-white rounded-xl shadow p-6 space-y-4 text-sm leading-6">
+  <h1 class="text-2xl font-semibold">Privacy Policy</h1>
+  <p>YouTube Studio Scheduler ("the app") is a private, single-user tool that its owner uses to schedule uploads to their own YouTube channels. It is not offered to the public, and only the owner's Google account can sign in.</p>
+  <h2 class="text-lg font-semibold">YouTube API Services</h2>
+  <p>The app uses YouTube API Services. By using it you also agree to the <a class="underline" href="https://www.youtube.com/t/terms">YouTube Terms of Service</a>, and Google's handling of data is described in the <a class="underline" href="https://policies.google.com/privacy">Google Privacy Policy</a>.</p>
+  <h2 class="text-lg font-semibold">What data is used and stored</h2>
+  <ul class="list-disc pl-6">
+    <li>Your Google account email and name, to check that you are allowed to sign in.</li>
+    <li>For connected YouTube channels: channel ID, title and handle, and an OAuth refresh token. Tokens are encrypted before they are stored.</li>
+    <li>Videos you upload, held temporarily in Google Cloud Storage and deleted after upload, plus their metadata (title, description, tags, schedule) and the resulting YouTube video IDs.</li>
+  </ul>
+  <h2 class="text-lg font-semibold">How it is used and shared</h2>
+  <p>Data is used only to upload and schedule videos on the owner's channels, keep an optional Google Sheet in sync, and email the owner a summary. It is not sold, shared with third parties, or used for advertising. Video metadata may be sent to Anthropic's Claude API to draft titles and descriptions.</p>
+  <h2 class="text-lg font-semibold">Retention and deletion</h2>
+  <p>Staged video files are deleted after upload. You can revoke the app's access at any time at <a class="underline" href="https://security.google.com/settings/security/permissions">Google security settings</a>; stored tokens then stop working and can be deleted on request.</p>
+  {% if settings.public_contact %}<h2 class="text-lg font-semibold">Contact</h2><p>{{ settings.public_contact }}</p>{% endif %}
+</article>
+{% endblock %}

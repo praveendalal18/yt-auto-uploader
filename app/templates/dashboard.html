@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Studio Scheduler{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-1">Dashboard</h1>
+<p class="text-sm text-slate-600 mb-6">Signed in as {{ user.email }} · {{ now_ist }} IST</p>
+<div class="grid gap-4 sm:grid-cols-3">
+  <section class="bg-white rounded-xl shadow p-4"><h2 class="font-medium">Next 7 days</h2><p class="text-sm text-slate-500 mt-2">Coming in Phase 3.</p></section>
+  <section class="bg-white rounded-xl shadow p-4"><h2 class="font-medium">Needs attention</h2><p class="text-sm text-slate-500 mt-2">Coming in Phase 4.</p></section>
+  <section class="bg-white rounded-xl shadow p-4"><h2 class="font-medium">Quota today</h2><p class="text-sm text-slate-500 mt-2">Coming in Phase 4.</p></section>
+</div>
+{% endblock %}

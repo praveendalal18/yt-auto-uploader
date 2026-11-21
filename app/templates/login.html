@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Studio Scheduler{% endblock %}
+{% block content %}
+<div class="max-w-sm mx-auto mt-16 bg-white rounded-xl shadow p-8 text-center">
+  <h1 class="text-xl font-semibold mb-2">Sign in</h1>
+  <p class="text-sm text-slate-600 mb-6">Private app. Only the owner's Google account can sign in.</p>
+  {% if error %}<p class="mb-4 text-sm text-red-700" role="alert">{{ error }}</p>{% endif %}
+  {% if configured %}
+  <a href="/auth/login" class="inline-block w-full rounded-lg bg-slate-900 text-white py-2.5 font-medium hover:bg-slate-700">
+    Sign in with Google
+  </a>
+  {% else %}
+  <p class="text-sm text-red-700" role="alert">Google Sign-In isn't set up yet: add OAUTH_CLIENT_ID and OAUTH_CLIENT_SECRET to your .env file.</p>
+  {% endif %}
+</div>
+{% endblock %}

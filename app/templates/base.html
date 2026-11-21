@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>{% block title %}YouTube Studio Scheduler{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900" hx-headers='{"X-CSRF-Token": "{{ csrf_token }}"}'>
+  {% if user and not settings.audit_approved %}
+  <div class="bg-amber-100 text-amber-900 text-sm px-4 py-2 text-center" role="status">
+    YouTube API audit not approved yet — uploads stay <strong>private</strong> until it is.
+  </div>
+  {% endif %}
+  <header class="bg-white border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4" x-data="{ open: false }">
+      <a href="/" class="font-semibold text-lg">🎬 Studio Scheduler</a>
+      {% if user %}
+      <button class="sm:hidden p-2 rounded border border-slate-300" @click="open = !open"
+              :aria-expanded="open" aria-controls="main-nav" aria-label="Menu">☰</button>
+      <nav id="main-nav" class="absolute sm:static top-14 right-4 bg-white sm:bg-transparent shadow sm:shadow-none rounded p-3 sm:p-0 sm:flex items-center gap-4 text-sm"
+           :class="open ? 'block' : 'hidden sm:flex'">
+        <a href="/" class="block py-1 hover:underline">Dashboard</a>
+        <span class="block py-1 text-slate-500">{{ user.email }}</span>
+        <form method="post" action="/auth/logout">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="py-1 text-red-700 hover:underline">Sign out</button>
+        </form>
+      </nav>
+      {% endif %}
+    </div>
+  </header>
+  <main class="max-w-6xl mx-auto px-4 py-6">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="max-w-6xl mx-auto px-4 py-6 text-xs text-slate-500 flex gap-4">
+    <a href="/privacy" class="hover:underline">Privacy</a>
+    <a href="/terms" class="hover:underline">Terms</a>
+  </footer>
+</body>
+</html>
