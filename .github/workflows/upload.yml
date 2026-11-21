@@ -1,0 +1,31 @@
+# ALTERNATIVE to Cloud Run: run on GitHub Actions (free for a PRIVATE repo, no billing card).
+# Repo Settings > Secrets and variables > Actions > add:
+#   TOKENS_JSON      = full contents of tokens/tokens.json
+#   SHEET_ID         = Google Sheet ID
+#   DRIVE_FOLDER_ID  = Drive "YouTube Uploads" folder ID
+name: YouTube uploader
+on:
+  schedule:
+    - cron: "30 */3 * * *"     # every 3 hours (UTC)
+  workflow_dispatch: {}         # "Run workflow" button for manual runs
+concurrency: yt-uploader
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - name: Write tokens
+        env:
+          TOKENS_JSON: ${{ secrets.TOKENS_JSON }}
+        run: |
+          mkdir -p tokens
+          printf '%s' "$TOKENS_JSON" > tokens/tokens.json
+      - name: Upload
+        env:
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
+        run: python src/uploader.py

@@ -1,0 +1,55 @@
+# ------------------------------------------------------------------
+#  YouTube Auto-Uploader — settings
+#  Edit this file, not the code.
+# ------------------------------------------------------------------
+
+timezone: "Asia/Kolkata"          # publish times in the sheet are read in this zone
+default_publish_time: "19:00"     # used when the sheet's Publish Time cell is empty
+min_minutes_ahead: 20             # a publish time sooner than this is rejected (YouTube needs a future time)
+
+sheet_tab: "Uploads"              # tab name inside the Google Sheet
+create_missing_playlists: true    # create a playlist automatically if its name doesn't exist yet
+new_playlist_privacy: "public"
+
+notify_email: "pravendalal@gmail.com"
+email_when_nothing_to_do: false   # true = get an email even on runs with no uploads
+
+# "Channel" column in the sheet must match a "name" below exactly.
+# "handle" is used to check the right channel login is used (safety check).
+# Anything left blank in the sheet falls back to these defaults.
+channels:
+  - name: "Ink & Motion"
+    handle: "@InkandMotionYT"
+    drive_folder: "Ink & Motion"
+    made_for_kids: false
+    ai_content: true
+    category: "Film & Animation"
+    language: "en"
+    notify_subscribers: true
+
+  - name: "Mirrorkin Press"
+    handle: "@MirrorkinPress"
+    drive_folder: "Mirrorkin Press"
+    made_for_kids: true
+    ai_content: true
+    category: "Education"
+    language: "en"
+    notify_subscribers: true
+
+  - name: "Kidz Curious Labs"
+    handle: "@KidzCuriousLabs"
+    drive_folder: "Kidz Curious Labs"
+    made_for_kids: true
+    ai_content: true
+    category: "Education"
+    language: "en"
+    notify_subscribers: true
+
+  - name: "AIPraveen"
+    handle: "@AIPraveen18"
+    drive_folder: "AIPraveen"
+    made_for_kids: false
+    ai_content: false
+    category: "Science & Technology"
+    language: "en"
+    notify_subscribers: true

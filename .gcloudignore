@@ -1,0 +1,5 @@
+tokens/
+client_secret*.json
+*.xlsx
+__pycache__/
+.git/
